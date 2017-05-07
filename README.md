@@ -215,3 +215,73 @@ Test outputs are saved under:
 ```
 output/<experiment directory>/<dataset name>/<network snapshot name>/
 ```
+### TROUBLESHOOTING
+--------------------------------------------------------------------------------------------------------
+
+	WARNING!!! THE GUIDE SAYS TO USE THE FASTER-RCNN BRANCH BUT USE FASTER-RCNN-UPSTREAM-XXXX
+
+--------------------------------------------------------------------------------------------------------
+./include/caffe/util/cudnn.hpp:124:41: error: too few arguments to function ‘cudnnStatus_t cudnnSetPooling2dDescriptor(cudnnPoolingDescriptor_t, cudnnPoolingMode_t, cudnnNanPropagation_t, int, int, int, int, int, int)’
+
+	Maybe you can try to merge caffe master branch into caffe-fast-rcnn.
+
+	cd caffe-fast-rcnn  
+	git remote add caffe https://github.com/BVLC/caffe.git  
+	
+	Remove self_.attr("phase") = static_cast<int>(this->phase_); from include/caffe/layers/python_layer.hpp after merging.
+
+
+
+
+--------------------------------------------------------------------------------------------------------
+./include/caffe/util/hdf5.hpp:6:18: fatal error: hdf5.h: No such file or directory
+
+	Modify Makefile.config lines 72 and 73
+		INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial
+		LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu/hdf5/serial
+
+--------------------------------------------------------------------------------------------------------
+src/caffe/layers/dropout_layer.cpp:19:3: error: ‘scale_train_’ was not declared in this scope
+   scale_train_ = this->layer_param_.dropout_param().scale_train();
+
+  	Define variable in class dropout_layer --> this error seems to be caused by the merge because there is a conflict in neuron_layers.hpp which
+	doesnt exist after the merge and in that file dropout_layer class has the variable but not in the new class.
+		bool scale_train_;
+
+--------------------------------------------------------------------------------------------------------
+./include/caffe/fast_rcnn_layers.hpp:16:33: fatal error: caffe/loss_layers.hpp: No such file or directory
+
+	Similar with previous error, something not merged properly, maybe not a bad idea to install previous cudnn
+	just copy the file from layers folder and change name
+
+--------------------------------------------------------------------------------------------------------
+src/caffe/layers/roi_pooling_layer.cpp:22:3: error: ‘ROIPoolingParameter’ was not declared in this scope
+
+	Just delete the files... It seems that the other one doesnt exist now...
+
+--------------------------------------------------------------------------------------------------------
+/usr/bin/ld: cannot find -lhdf5_hl
+/usr/bin/ld: cannot find -lhdf5
+
+	Check where do u have installed hdf5_hl --> Check where is it installed in your computer in my case 
+		LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/aarch64-linux-gnu/hdf5/serial
+
+			SHOULD BE
+
+		
+		LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu/hdf5/serial
+
+--------------------------------------------------------------------------------------------------------
+RUNING tools/demo.py:
+	Error parsing text-format caffe.NetParameter: 350:21: Message type "caffe.LayerParameter" has no field named "roi_pooling_param".
+
+
+	Make sure that optional ROIPoolingParameter roi_pooling_param = 8266711; is in caffe-fast-rcnn/src/caffe/proto/caffe.proto. Remember to rebuild caffe-fast-rcnn after merging.
+
+--------------------------------------------------------------------------------------------------------
+F1210 08:16:15.441911 10686 layer_factory.hpp:80] Check failed: registry.count(type) == 1 (0 vs. 1) Unknown layer type: Python
+
+
+		You have to uncomment WITH_PYTHON_LAYER := 1 in the Makefile.config, then make clean, then make to rebuild
+
+
