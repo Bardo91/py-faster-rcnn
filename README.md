@@ -284,4 +284,7 @@ F1210 08:16:15.441911 10686 layer_factory.hpp:80] Check failed: registry.count(t
 
 		You have to uncomment WITH_PYTHON_LAYER := 1 in the Makefile.config, then make clean, then make to rebuild
 
+--------------------------------------------------------------------------------------------------------
+/usr/include/opencv2/contrib/contrib.hpp:273:23: error: ‘vector’ does not name a type
 
+	remove #include <opencv2/contrib/contrib.hpp> from file  caffe-faster-rcnn/include/caffe/FRCNN/util/frcnn_utils.hpp
